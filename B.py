@@ -1,60 +1,51 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 15 20:39:50 2023
-
-@author: user
-"""
-
-#!/bin/python
-# -*- coding: utf-8 -*-
-
 import numpy as np
 import matplotlib.pyplot as plt
-
-def myFFT(v):
-    n = len(v)
-    
-    if n==1:
-        return v
-    else:
-        # implement some recursive
-        F_even = myFFT(v[::2])
-        F_odd = myFFT(v[1::2])
-        
-        # frequency factor
-        fac = np.exp(-2j*np.pi*np.arange(n)/n)
-        
-        # build FFT array
-        F = np.concatenate([
-            F_even + fac[:int(n/2)]*F_odd,
-            F_even + fac[int(n/2):]*F_odd
-            ])
-        
-        return F
+from scipy.signal import butter, lfilter
 
 # ID
 print("Nama: Rezi Rafidan Alfizar")
 print("NRP: 5009211024")
 
-# X array linear spacing
-X = np.arange(0,1,1.0/128)
+# Generate a noisy sinusoidal signal
+fs = 1000  # Sampling frequency (Hz)
+t = np.arange(0, 1, 1/fs)  # Time vector from 0 to 1 second
+f_signal = 5  # Frequency of the signal (Hz)
+signal = np.sin(2 * np.pi * f_signal * t)  # Clean sinusoidal signal
+noise = 0.5 * np.random.normal(0, 1, len(t))  # Gaussian noise
+noisy_signal = signal + noise  # Noisy signal
 
-# Y sinus function
-Y = np.sin(2*np.pi*X)
+# Define a function for low-pass Butterworth filter
+def butter_lowpass(cutoff, fs, order=5):
+    nyquist = 0.5 * fs
+    normal_cutoff = cutoff / nyquist
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
 
-# create noise array at X length
-R = np.random.rand(len(X))
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
 
-# add noise to sine result
-Yr = Y + R
+# Apply low-pass filter to the noisy signal
+cutoff_freq = 30  # Cutoff frequency of the filter (Hz)
+filtered_signal = butter_lowpass_filter(noisy_signal, cutoff_freq, fs)
 
-# FFT all
-FY = np.abs(myFFT(Y))
-FYr = np.abs(myFFT(Yr))
+# Plot the original signal, noisy signal, and filtered signal
+plt.figure(figsize=(12, 6))
+plt.subplot(2, 1, 1)
+plt.plot(t, noisy_signal, 'b-', label='Noisy Signal')
+plt.plot(t, signal, 'g', linewidth=2, label='Clean Signal')
+plt.legend()
+plt.title('Noisy Signal and Clean Signal')
+plt.xlabel('Time (s)')
+plt.grid()
 
-# plot all
-fig, ax = plt.subplots(2,2)
-ax[0,0].plot(X,Y)
-ax[0,1].plot(FY)
-ax[1,0].plot(X,Yr)
-ax[1,1].plot(FYr)
+plt.subplot(2, 1, 2)
+plt.plot(t, filtered_signal, 'r', label='Filtered Signal')
+plt.legend()
+plt.title('Filtered Signal (Low-Pass Butterworth)')
+plt.xlabel('Time (s)')
+plt.grid()
+
+plt.tight_layout()
+plt.show()
