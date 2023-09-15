@@ -13,3 +13,4 @@ print("NRP: 5009211024")
 <img align="center" src="https://github.com/rezira24/tugas-sinyal/blob/main/B.png" width="960px" alt="lalit's Github Stats">
 
 <h3>C. Last Commit Logs</h3>
+<img align="center" src="https://github.com/rezira24/tugas-sinyal/blob/main/C.png" width="960px" alt="lalit's Github Stats">
